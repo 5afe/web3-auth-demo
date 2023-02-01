@@ -5,6 +5,7 @@ import { OpenloginAdapter } from '@web3auth/openlogin-adapter';
 import RPC from './ethersRPC';
 import { chains } from './chains';
 import { Button, Grid, TextField, Typography } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
 import { EthHashInfo } from '@safe-global/safe-react-components';
 import AppBar from './components/AppBar';
 import FormDialog from './components/FormDialog';
@@ -24,6 +25,8 @@ function App() {
   );
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
   const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false);
+  const [isSigning, setIsSigning] = useState(false);
+  const [isTransactionExecution, setIsTransactionExecution] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -116,19 +119,25 @@ function App() {
   const sendTransaction = async (target: string) => {
     if (!provider) return;
 
+    setIsTransactionExecution(true);
+
     const rpc = new RPC(provider);
     const receipt = await rpc.sendTransaction(target);
 
     setInfo(JSON.stringify(receipt, null, 2));
+    setIsTransactionExecution(false);
   };
 
   const signMessage = async (message: string) => {
     if (!provider) return;
 
+    setIsSigning(true);
+
     const rpc = new RPC(provider);
     const signedMessage = await rpc.signMessage(message);
 
     setInfo(signedMessage);
+    setIsSigning(false);
   };
 
   useEffect(() => {
@@ -188,20 +197,24 @@ function App() {
             <>
               <Grid container spacing={2}>
                 <Grid item>
-                  <Button
-                    variant="contained"
+                  <LoadingButton
+                    color="primary"
                     onClick={() => setIsMessageDialogOpen(true)}
+                    loading={isSigning}
+                    variant="contained"
                   >
-                    Sign Message
-                  </Button>
+                    <span>Sign Message</span>
+                  </LoadingButton>
                 </Grid>
                 <Grid item>
-                  <Button
-                    variant="contained"
+                  <LoadingButton
+                    color="primary"
                     onClick={() => setIsTransactionDialogOpen(true)}
+                    loading={isTransactionExecution}
+                    variant="contained"
                   >
-                    Send Transaction
-                  </Button>
+                    <span>Send Transaction</span>
+                  </LoadingButton>
                 </Grid>
               </Grid>
 
