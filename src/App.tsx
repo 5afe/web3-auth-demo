@@ -209,7 +209,7 @@ function App() {
                 <TextField
                   sx={{ mt: 4, width: '100%' }}
                   multiline
-                  maxRows={10}
+                  maxRows={20}
                   value={info}
                 />
               )}
