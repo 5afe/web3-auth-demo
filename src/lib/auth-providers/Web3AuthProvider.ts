@@ -1,11 +1,11 @@
-import { SafeEventEmitterProvider, WALLET_ADAPTERS } from '@web3auth/base';
+import { WALLET_ADAPTERS } from '@web3auth/base';
 import { Web3Auth } from '@web3auth/modal';
 import { OpenloginAdapter } from '@web3auth/openlogin-adapter';
 import { ISafeAuthClient } from '../SafeAuth';
 import { chains } from './chains';
-import RPC from '../ethersRPC';
 
 export default class Web3AuthProvider implements ISafeAuthClient {
+  provider: any;
   private clientId: string;
   private chain: string;
 
@@ -69,28 +69,30 @@ export default class Web3AuthProvider implements ISafeAuthClient {
         },
       });
 
+      this.provider = web3auth.provider;
       this.web3authInstance = web3auth;
     } catch (error) {
       console.error(error);
     }
   }
 
-  async signIn(): Promise<string | undefined> {
+  async signIn(): Promise<void> {
     if (!this.web3authInstance) return;
 
-    await this.web3authInstance.connect();
-
-    const rpc =
-      this.web3authInstance.provider && new RPC(this.web3authInstance.provider);
-
-    const address = await rpc?.getAccounts();
-
-    return address;
+    this.provider = await this.web3authInstance.connect();
   }
 
   async signOut(): Promise<void> {
     if (!this.web3authInstance) return;
 
     return await this.web3authInstance?.logout();
+  }
+
+  async getUserInfo(): Promise<{ name?: string; email?: string }> {
+    if (!this.web3authInstance) return {};
+
+    const userInfo = await this.web3authInstance?.getUserInfo();
+
+    return { name: userInfo.name, email: userInfo.email };
   }
 }

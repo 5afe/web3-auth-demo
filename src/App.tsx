@@ -1,16 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Web3Auth } from '@web3auth/modal';
-import { WALLET_ADAPTERS, SafeEventEmitterProvider } from '@web3auth/base';
-import { OpenloginAdapter } from '@web3auth/openlogin-adapter';
+import { SafeEventEmitterProvider } from '@web3auth/base';
 import RPC from './lib/ethersRPC';
-import { chains } from './lib/auth-providers/chains';
 import { Grid, TextField, Typography } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { EthHashInfo } from '@safe-global/safe-react-components';
 import AppBar from './components/AppBar';
 import FormDialog from './components/FormDialog';
-
-const clientId = process.env.REACT_APP_WEB3AUTH_CLIENT_ID || '';
+import SafeAuth from './lib/SafeAuth';
 
 function App() {
   const [userInfo, setUserInfo] = useState<any>(null);
@@ -19,7 +15,7 @@ function App() {
   const [balance, setBalance] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [info, setInfo] = useState<string>('');
-  const [web3auth, setWeb3auth] = useState<Web3Auth | null>(null);
+  const [safeAuth, setSafeAuth] = useState<SafeAuth>();
   const [provider, setProvider] = useState<SafeEventEmitterProvider | null>(
     null
   );
@@ -29,86 +25,24 @@ function App() {
   const [isTransactionExecution, setIsTransactionExecution] = useState(false);
 
   useEffect(() => {
-    const init = async () => {
-      try {
-        const web3auth = new Web3Auth({
-          clientId,
-          web3AuthNetwork: 'testnet', // mainnet, aqua, celeste, cyan or testnet
-          chainConfig: chains['5'],
-          uiConfig: {
-            theme: 'dark',
-            loginMethodsOrder: ['facebook', 'google'],
-            appLogo: 'https://web3auth.io/images/w3a-L-Favicon-1.svg', // Your App Logo Here
-          },
-        });
-
-        const openloginAdapter = new OpenloginAdapter({
-          loginSettings: {
-            mfaLevel: 'optional', // Pass on the mfa level of your choice: default, optional, mandatory, none
-          },
-          adapterSettings: {
-            uxMode: 'popup',
-            whiteLabel: {
-              name: 'Your app Name',
-              logoLight: 'https://web3auth.io/images/w3a-L-Favicon-1.svg',
-              logoDark: 'https://web3auth.io/images/w3a-D-Favicon-1.svg',
-              defaultLanguage: 'en',
-              dark: true, // whether to enable dark mode. defaultValue: false
-            },
-          },
-        });
-
-        web3auth.configureAdapter(openloginAdapter);
-
-        setWeb3auth(web3auth);
-
-        await web3auth.initModal({
-          modalConfig: {
-            [WALLET_ADAPTERS.OPENLOGIN]: {
-              label: 'openlogin',
-              loginMethods: {
-                google: {
-                  name: 'google login',
-                  logoDark:
-                    'url to your custom logo which will shown in dark mode',
-                },
-                facebook: {
-                  name: 'facebook login',
-                  // it will hide the facebook option from the Web3Auth modal.
-                  showOnModal: false,
-                },
-              },
-              // setting it to false will hide all social login methods from modal.
-              showOnModal: true,
-            },
-          },
-        });
-
-        if (web3auth.provider) {
-          setProvider(web3auth.provider);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    init();
+    setSafeAuth(new SafeAuth('web3Auth', '5'));
   }, []);
 
   const login = async () => {
-    if (!web3auth) return;
+    if (!safeAuth) return;
 
-    const web3authProvider = await web3auth.connect();
-
-    if (web3authProvider) {
-      setProvider(web3authProvider);
-    }
+    const response = await safeAuth.signIn();
+    setProvider(safeAuth.getProvider());
+    setAddress(response.eoa.address);
+    setBalance(response.eoa.balance);
+    setChainId(response.chainId);
+    setUserInfo(response.userInfo);
   };
 
   const logout = async () => {
-    if (!web3auth) return;
+    if (!safeAuth) return;
 
-    await web3auth.logout();
+    await safeAuth.signOut();
 
     setProvider(null);
     setUserInfo(null);
@@ -139,25 +73,6 @@ function App() {
     setInfo(signedMessage);
     setIsSigning(false);
   };
-
-  useEffect(() => {
-    if (!provider || !web3auth) return;
-
-    (async () => {
-      const user = await web3auth.getUserInfo();
-      console.info(user);
-      setUserInfo(user);
-
-      const rpc = new RPC(provider);
-      const address = await rpc.getAccounts();
-      const balance = await rpc.getBalance();
-      const chainId = await rpc.getChainId();
-
-      setAddress(address);
-      setBalance(balance);
-      setChainId(chainId);
-    })();
-  }, [provider, web3auth]);
 
   useEffect(() => {
     setInfo('');

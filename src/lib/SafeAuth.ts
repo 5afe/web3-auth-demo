@@ -1,13 +1,24 @@
 import Web3AuthProvider from './auth-providers/Web3AuthProvider';
+import RPC from './ethersRPC';
 
 interface LoginResponse {
-  eoa: string;
+  chainId: string;
+  eoa: {
+    address: string;
+    balance: string;
+  };
   safes: string[];
+  userInfo: {
+    name?: string;
+    email?: string;
+  };
 }
 
 type AuthProviderType = 'web3Auth';
 
 export interface ISafeAuthClient {
+  provider: any;
+  getUserInfo(): Promise<{ name?: string; email?: string }>;
   initialize(): Promise<void>;
   signIn(): Promise<any>;
   signOut(): Promise<any>;
@@ -20,27 +31,47 @@ export default class SafeAuth {
     this.initializeAuthProvider(providerType, chainId);
   }
 
-  private initializeAuthProvider(type: AuthProviderType, chainId: string) {
+  private async initializeAuthProvider(
+    type: AuthProviderType,
+    chainId: string
+  ) {
     switch (type) {
       case 'web3Auth':
         this.authClient = new Web3AuthProvider(
           process.env.REACT_APP_WEB3AUTH_CLIENT_ID || '',
           chainId
         );
-        return;
+
+        return await this.authClient.initialize();
       default:
         return;
     }
   }
 
   async signIn(): Promise<LoginResponse> {
-    const eoa = await this.authClient?.signIn();
+    await this.authClient?.signIn();
 
-    return { eoa, safes: [] };
+    const userInfo = await this.authClient?.getUserInfo();
+
+    const rpc = this.getProvider() && new RPC(this.getProvider());
+    const address = await rpc.getAccounts();
+    const balance = await rpc.getBalance();
+    const chainId = await rpc.getChainId();
+
+    return {
+      chainId,
+      eoa: { address, balance },
+      safes: [],
+      userInfo: userInfo || {},
+    };
   }
 
   async signOut(): Promise<void> {
     this.authClient?.signOut();
+  }
+
+  getProvider() {
+    return this.authClient?.provider;
   }
 
   // private provider: SafeEventEmitterProvider;
