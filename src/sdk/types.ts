@@ -17,7 +17,7 @@ export interface SafeAuthSignInResponse {
 
 export interface SafeAuthClient {
   provider: any;
-  getUserInfo(): Promise<{ name?: string; email?: string }>;
+  getUserInfo(): Promise<UserInfo>;
   initialize(): Promise<void>;
   signIn(): Promise<any>;
   signOut(): Promise<any>;
