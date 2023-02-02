@@ -6,12 +6,12 @@ export const chains: Record<
   string,
   Partial<CustomChainConfig> & Pick<CustomChainConfig, 'chainNamespace'>
 > = {
-  MAINNET: {
+  '1': {
     chainNamespace: CHAIN_NAMESPACES.EIP155,
     chainId: '0x1',
     rpcTarget: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
   },
-  GOERLI: {
+  '5': {
     chainNamespace: CHAIN_NAMESPACES.EIP155,
     chainId: '0x5',
     rpcTarget: `https://goerli.infura.io/v3/${INFURA_KEY}`,

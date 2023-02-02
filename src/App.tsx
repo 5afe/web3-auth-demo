@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { Web3Auth } from '@web3auth/modal';
 import { WALLET_ADAPTERS, SafeEventEmitterProvider } from '@web3auth/base';
 import { OpenloginAdapter } from '@web3auth/openlogin-adapter';
-import RPC from './ethersRPC';
-import { chains } from './chains';
-import { Button, Grid, TextField, Typography } from '@mui/material';
+import RPC from './lib/ethersRPC';
+import { chains } from './lib/auth-providers/chains';
+import { Grid, TextField, Typography } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { EthHashInfo } from '@safe-global/safe-react-components';
 import AppBar from './components/AppBar';
@@ -34,7 +34,7 @@ function App() {
         const web3auth = new Web3Auth({
           clientId,
           web3AuthNetwork: 'testnet', // mainnet, aqua, celeste, cyan or testnet
-          chainConfig: chains.GOERLI,
+          chainConfig: chains['5'],
           uiConfig: {
             theme: 'dark',
             loginMethodsOrder: ['facebook', 'google'],
