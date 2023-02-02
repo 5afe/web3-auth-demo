@@ -19,8 +19,8 @@ export interface SafeAuthClient {
   provider: any;
   getUserInfo(): Promise<UserInfo>;
   initialize(): Promise<void>;
-  signIn(): Promise<any>;
-  signOut(): Promise<any>;
+  signIn(): Promise<void>;
+  signOut(): Promise<void>;
 }
 
 export enum SafeAuthProviderType {
