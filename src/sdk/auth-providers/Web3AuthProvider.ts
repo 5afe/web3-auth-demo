@@ -1,10 +1,12 @@
 import { WALLET_ADAPTERS } from '@web3auth/base';
 import { Web3Auth } from '@web3auth/modal';
 import { OpenloginAdapter } from '@web3auth/openlogin-adapter';
-import { ISafeAuthClient } from '../SafeAuth';
-import { chains } from './chains';
 
-export default class Web3AuthProvider implements ISafeAuthClient {
+import { chains } from './chainConfig';
+
+import type { SafeAuthClient } from '../types';
+
+export default class Web3AuthProvider implements SafeAuthClient {
   provider: any;
   private clientId: string;
   private chain: string;

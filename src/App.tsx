@@ -1,21 +1,22 @@
 import { useEffect, useState } from 'react';
 import { SafeEventEmitterProvider } from '@web3auth/base';
-import RPC from './lib/ethersRPC';
 import { Grid, TextField, Typography } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { EthHashInfo } from '@safe-global/safe-react-components';
+
+import { SafeAuth, SafeAuthProviderType } from './sdk';
+import { RPC } from './utils';
 import AppBar from './components/AppBar';
 import FormDialog from './components/FormDialog';
-import SafeAuth from './lib/SafeAuth';
+
+import type { SafeAuthSignInResponse } from './sdk';
 
 function App() {
-  const [userInfo, setUserInfo] = useState<any>(null);
-  const [address, setAddress] = useState<string>('');
-  const [chainId, setChainId] = useState<string>('');
-  const [balance, setBalance] = useState<string>('');
+  const [safeAuthSignInResponse, setSafeAuthSignInResponse] =
+    useState<SafeAuthSignInResponse | null>(null);
+  const [safeAuth, setSafeAuth] = useState<SafeAuth>();
   const [error, setError] = useState<string>('');
   const [info, setInfo] = useState<string>('');
-  const [safeAuth, setSafeAuth] = useState<SafeAuth>();
   const [provider, setProvider] = useState<SafeEventEmitterProvider | null>(
     null
   );
@@ -25,18 +26,20 @@ function App() {
   const [isTransactionExecution, setIsTransactionExecution] = useState(false);
 
   useEffect(() => {
-    setSafeAuth(new SafeAuth('web3Auth', '5'));
+    setSafeAuth(
+      new SafeAuth(SafeAuthProviderType.Web3Auth, {
+        chainId: '5',
+        txServiceUrl: 'https://safe-transaction-goerli.safe.global',
+      })
+    );
   }, []);
 
   const login = async () => {
     if (!safeAuth) return;
 
     const response = await safeAuth.signIn();
+    setSafeAuthSignInResponse(response);
     setProvider(safeAuth.getProvider());
-    setAddress(response.eoa.address);
-    setBalance(response.eoa.balance);
-    setChainId(response.chainId);
-    setUserInfo(response.userInfo);
   };
 
   const logout = async () => {
@@ -45,7 +48,7 @@ function App() {
     await safeAuth.signOut();
 
     setProvider(null);
-    setUserInfo(null);
+    setSafeAuthSignInResponse(null);
     setError('');
     setInfo('');
   };
@@ -84,25 +87,27 @@ function App() {
       <AppBar onLogin={login} onLogout={logout} isLoggedIn={!!provider} />
       <Grid container>
         <Grid item md={3} p={4}>
-          {userInfo && (
+          {safeAuthSignInResponse?.userInfo && (
             <>
               <EthHashInfo
-                address={address}
+                address={safeAuthSignInResponse?.eoa.address}
                 showCopyButton
                 showPrefix
-                prefix={chainId === '1' ? 'eth' : 'gor'}
+                prefix={safeAuthSignInResponse?.chainId === '1' ? 'eth' : 'gor'}
               />
               <Typography variant="h2" sx={{ mt: 3 }}>
-                {Math.round(Number(balance) * 10000) / 10000}{' '}
+                {Math.round(
+                  Number(safeAuthSignInResponse?.eoa.balance) * 10000
+                ) / 10000}{' '}
                 <Typography variant="h3" component="span" color="primary">
                   ETH
                 </Typography>
               </Typography>
               <Typography variant="h4" sx={{ mt: 4 }}>
-                {userInfo.name}
+                {safeAuthSignInResponse?.userInfo.name}
               </Typography>
               <Typography variant="body2" color="primary">
-                {userInfo.email}
+                {safeAuthSignInResponse?.userInfo.email}
               </Typography>
             </>
           )}
