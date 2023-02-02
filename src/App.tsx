@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { SafeEventEmitterProvider } from '@web3auth/base';
-import { Grid, TextField, Typography } from '@mui/material';
+import { Box, Divider, Grid, TextField, Typography } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { EthHashInfo } from '@safe-global/safe-react-components';
 
@@ -115,6 +115,33 @@ function App() {
         <Grid item md={9} p={4}>
           {provider && (
             <>
+              {safeAuthSignInResponse?.safes?.length ? (
+                <>
+                  <Typography variant="h3" color="secondary" fontWeight={700}>
+                    Available Safes
+                  </Typography>
+                  {safeAuthSignInResponse?.safes?.map((safe) => (
+                    <Box sx={{ my: 3 }} key={safe}>
+                      <EthHashInfo address={safe} showCopyButton />
+                    </Box>
+                  ))}
+                </>
+              ) : (
+                <Typography variant="h4" color="secondary" sx={{ my: 3 }}>
+                  You don't have any Safe available
+                  <LoadingButton
+                    size="small"
+                    color="secondary"
+                    onClick={() => console.log('TODO deployment')}
+                    loading={isSigning}
+                    variant="outlined"
+                    sx={{ ml: 2 }}
+                  >
+                    <span>Deploy</span>
+                  </LoadingButton>
+                </Typography>
+              )}
+              <Divider sx={{ my: 4 }} />
               <Grid container spacing={2}>
                 <Grid item>
                   <LoadingButton
