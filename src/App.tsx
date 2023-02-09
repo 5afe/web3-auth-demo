@@ -3,17 +3,19 @@ import { SafeEventEmitterProvider } from '@web3auth/base';
 import { Box, Divider, Grid, TextField, Typography } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { EthHashInfo } from '@safe-global/safe-react-components';
+import {
+  SafeAuth,
+  SafeAuthProviderType,
+  SafeAuthSignInData,
+} from '@safe-global/account-abstraction-auth';
 
-import { SafeAuth, SafeAuthProviderType } from './sdk';
 import { RPC } from './utils';
 import AppBar from './components/AppBar';
 import FormDialog from './components/FormDialog';
 
-import type { SafeAuthSignInResponse } from './sdk';
-
 function App() {
   const [safeAuthSignInResponse, setSafeAuthSignInResponse] =
-    useState<SafeAuthSignInResponse | null>(null);
+    useState<SafeAuthSignInData | null>(null);
   const [safeAuth, setSafeAuth] = useState<SafeAuth>();
   const [error, setError] = useState<string>('');
   const [info, setInfo] = useState<string>('');
@@ -28,8 +30,14 @@ function App() {
   useEffect(() => {
     setSafeAuth(
       new SafeAuth(SafeAuthProviderType.Web3Auth, {
-        chainId: '5',
+        chainId: '0x5',
         txServiceUrl: 'https://safe-transaction-goerli.safe.global',
+        authProviderConfig: {
+          rpcTarget: `https://goerli.infura.io/v3/${process.env.REACT_APP_INFURA_KEY}`,
+          web3AuthClientId: process.env.REACT_APP_WEB3AUTH_CLIENT_ID || '',
+          web3AuthNetwork: 'testnet',
+          theme: 'dark',
+        },
       })
     );
   }, []);
@@ -120,8 +128,8 @@ function App() {
                   <Typography variant="h3" color="secondary" fontWeight={700}>
                     Available Safes
                   </Typography>
-                  {safeAuthSignInResponse?.safes?.map((safe) => (
-                    <Box sx={{ my: 3 }} key={safe}>
+                  {safeAuthSignInResponse?.safes?.map((safe, index) => (
+                    <Box sx={{ my: 3 }} key={index}>
                       <EthHashInfo address={safe} showCopyButton />
                     </Box>
                   ))}

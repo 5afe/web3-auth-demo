@@ -1,0 +1,9 @@
+{
+  "version": "v1",
+  "packages": {
+    "@safe-global/account-abstraction-auth": {
+      "signature": "8ad6bdcc9bc7d0283076a4e458196c9b",
+      "file": true
+    }
+  }
+}
